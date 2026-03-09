@@ -482,7 +482,10 @@ type macro_signature = (
   * ret_type option
 )
 
-type variant = (identifier (*tok*) * datatype_fields option)
+type variant = [
+    `Vari_id_opt_data_fields of (identifier (*tok*) * datatype_fields option)
+  | `Ellips of Token.t (* "..." *)
+]
 
 type enum_variants = (
     Token.t (* "{" *)
@@ -803,12 +806,15 @@ and macro_call_expression = (
   * arg_list
 )
 
-and match_arm = (
-    bind_list
-  * (Token.t (* "if" *) * expression) option
-  * Token.t (* "=>" *)
-  * expression
-)
+and match_arm = [
+    `Bind_list_opt_if_exp_EQGT_exp of (
+        bind_list
+      * (Token.t (* "if" *) * expression) option
+      * Token.t (* "=>" *)
+      * expression
+    )
+  | `Ellips of Token.t (* "..." *)
+]
 
 and match_body = (
     Token.t (* "{" *)

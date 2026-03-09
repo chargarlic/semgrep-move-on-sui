@@ -13,19 +13,17 @@
 open Tree_sitter_bindings
 open Tree_sitter_run
 
-let debug = ref false
-
 type mt = Run.matcher_token
 
 external create_parser :
   unit -> Tree_sitter_API.ts_parser = "octs_create_parser_move_on_sui"
 
-let ts_parser = create_parser ()
-
 let parse_source_string ?src_file contents =
+  let ts_parser = create_parser () in
   Tree_sitter_parsing.parse_source_string ?src_file ts_parser contents
 
 let parse_source_file src_file =
+  let ts_parser = create_parser () in
   Tree_sitter_parsing.parse_source_file ts_parser src_file
 
 let extras = [
@@ -931,12 +929,15 @@ let children_regexps : (string * Run.exp option) list = [
   );
   "variant",
   Some (
-    Seq [
-      Token (Name "variant_identifier");
-      Opt (
-        Token (Name "datatype_fields");
-      );
-    ];
+    Alt [|
+      Seq [
+        Token (Name "variant_identifier");
+        Opt (
+          Token (Name "datatype_fields");
+        );
+      ];
+      Token (Name "ellipsis");
+    |];
   );
   "struct_definition",
   Some (
@@ -1607,17 +1608,20 @@ let children_regexps : (string * Run.exp option) list = [
   );
   "match_arm",
   Some (
-    Seq [
-      Token (Name "bind_list");
-      Opt (
-        Seq [
-          Token (Literal "if");
-          Token (Name "expression");
-        ];
-      );
-      Token (Literal "=>");
-      Token (Name "expression");
-    ];
+    Alt [|
+      Seq [
+        Token (Name "bind_list");
+        Opt (
+          Seq [
+            Token (Literal "if");
+            Token (Name "expression");
+          ];
+        );
+        Token (Literal "=>");
+        Token (Name "expression");
+      ];
+      Token (Name "ellipsis");
+    |];
   );
   "match_body",
   Some (
@@ -4116,12 +4120,22 @@ let trans_variant ((kind, body) : mt) : CST.variant =
   match body with
   | Children v ->
       (match v with
-      | Seq [v0; v1] ->
-          (
-            trans_variant_identifier (Run.matcher_token v0),
-            Run.opt
-              (fun v -> trans_datatype_fields (Run.matcher_token v))
-              v1
+      | Alt (0, v) ->
+          `Vari_id_opt_data_fields (
+            (match v with
+            | Seq [v0; v1] ->
+                (
+                  trans_variant_identifier (Run.matcher_token v0),
+                  Run.opt
+                    (fun v -> trans_datatype_fields (Run.matcher_token v))
+                    v1
+                )
+            | _ -> assert false
+            )
+          )
+      | Alt (1, v) ->
+          `Ellips (
+            trans_ellipsis (Run.matcher_token v)
           )
       | _ -> assert false
       )
@@ -5594,24 +5608,34 @@ and trans_match_arm ((kind, body) : mt) : CST.match_arm =
   match body with
   | Children v ->
       (match v with
-      | Seq [v0; v1; v2; v3] ->
-          (
-            trans_bind_list (Run.matcher_token v0),
-            Run.opt
-              (fun v ->
-                (match v with
-                | Seq [v0; v1] ->
-                    (
-                      Run.trans_token (Run.matcher_token v0),
-                      trans_expression (Run.matcher_token v1)
+      | Alt (0, v) ->
+          `Bind_list_opt_if_exp_EQGT_exp (
+            (match v with
+            | Seq [v0; v1; v2; v3] ->
+                (
+                  trans_bind_list (Run.matcher_token v0),
+                  Run.opt
+                    (fun v ->
+                      (match v with
+                      | Seq [v0; v1] ->
+                          (
+                            Run.trans_token (Run.matcher_token v0),
+                            trans_expression (Run.matcher_token v1)
+                          )
+                      | _ -> assert false
+                      )
                     )
-                | _ -> assert false
+                    v1
+                  ,
+                  Run.trans_token (Run.matcher_token v2),
+                  trans_expression (Run.matcher_token v3)
                 )
-              )
-              v1
-            ,
-            Run.trans_token (Run.matcher_token v2),
-            trans_expression (Run.matcher_token v3)
+            | _ -> assert false
+            )
+          )
+      | Alt (1, v) ->
+          `Ellips (
+            trans_ellipsis (Run.matcher_token v)
           )
       | _ -> assert false
       )

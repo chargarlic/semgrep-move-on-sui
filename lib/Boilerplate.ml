@@ -1224,18 +1224,25 @@ let map_macro_signature (env : env) ((v1, v2, v3, v4, v5, v6) : CST.macro_signat
   in
   R.Tuple [v1; v2; v3; v4; v5; v6]
 
-let map_variant (env : env) ((v1, v2) : CST.variant) =
-  let v1 =
-    (* pattern (`)?[a-zA-Z_][0-9a-zA-Z_]*(`)?|\$\.\.\.[A-Z_][A-Z_0-9]*]|\$[A-Z_][A-Z_0-9]* *) token env v1
-  in
-  let v2 =
-    (match v2 with
-    | Some x -> R.Option (Some (
-        map_datatype_fields env x
-      ))
-    | None -> R.Option None)
-  in
-  R.Tuple [v1; v2]
+let map_variant (env : env) (x : CST.variant) =
+  (match x with
+  | `Vari_id_opt_data_fields (v1, v2) -> R.Case ("Vari_id_opt_data_fields",
+      let v1 =
+        (* pattern (`)?[a-zA-Z_][0-9a-zA-Z_]*(`)?|\$\.\.\.[A-Z_][A-Z_0-9]*]|\$[A-Z_][A-Z_0-9]* *) token env v1
+      in
+      let v2 =
+        (match v2 with
+        | Some x -> R.Option (Some (
+            map_datatype_fields env x
+          ))
+        | None -> R.Option None)
+      in
+      R.Tuple [v1; v2]
+    )
+  | `Ellips tok -> R.Case ("Ellips",
+      (* "..." *) token env tok
+    )
+  )
 
 let map_enum_variants (env : env) ((v1, v2, v3, v4) : CST.enum_variants) =
   let v1 = (* "{" *) token env v1 in
@@ -2027,20 +2034,27 @@ and map_macro_call_expression (env : env) ((v1, v2, v3) : CST.macro_call_express
   let v3 = map_arg_list env v3 in
   R.Tuple [v1; v2; v3]
 
-and map_match_arm (env : env) ((v1, v2, v3, v4) : CST.match_arm) =
-  let v1 = map_bind_list env v1 in
-  let v2 =
-    (match v2 with
-    | Some (v1, v2) -> R.Option (Some (
-        let v1 = (* "if" *) token env v1 in
-        let v2 = map_expression env v2 in
-        R.Tuple [v1; v2]
-      ))
-    | None -> R.Option None)
-  in
-  let v3 = (* "=>" *) token env v3 in
-  let v4 = map_expression env v4 in
-  R.Tuple [v1; v2; v3; v4]
+and map_match_arm (env : env) (x : CST.match_arm) =
+  (match x with
+  | `Bind_list_opt_if_exp_EQGT_exp (v1, v2, v3, v4) -> R.Case ("Bind_list_opt_if_exp_EQGT_exp",
+      let v1 = map_bind_list env v1 in
+      let v2 =
+        (match v2 with
+        | Some (v1, v2) -> R.Option (Some (
+            let v1 = (* "if" *) token env v1 in
+            let v2 = map_expression env v2 in
+            R.Tuple [v1; v2]
+          ))
+        | None -> R.Option None)
+      in
+      let v3 = (* "=>" *) token env v3 in
+      let v4 = map_expression env v4 in
+      R.Tuple [v1; v2; v3; v4]
+    )
+  | `Ellips tok -> R.Case ("Ellips",
+      (* "..." *) token env tok
+    )
+  )
 
 and map_match_body (env : env) ((v1, v2, v3, v4) : CST.match_body) =
   let v1 = (* "{" *) token env v1 in
