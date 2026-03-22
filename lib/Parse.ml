@@ -119,6 +119,8 @@ let children_regexps : (string * Run.exp option) list = [
         Token (Literal "key");
       |];
       Token (Name "ellipsis");
+      Token (Name "semgrep_metavar_ellipsis");
+      Token (Name "semgrep_metavar_var");
     |];
   );
   "reserved_identifier",
@@ -2445,6 +2447,14 @@ let trans_ability ((kind, body) : mt) : CST.ability =
       | Alt (1, v) ->
           `Ellips (
             trans_ellipsis (Run.matcher_token v)
+          )
+      | Alt (2, v) ->
+          `Semg_meta_ellips (
+            trans_semgrep_metavar_ellipsis (Run.matcher_token v)
+          )
+      | Alt (3, v) ->
+          `Semg_meta_var (
+            trans_semgrep_metavar_var (Run.matcher_token v)
           )
       | _ -> assert false
       )

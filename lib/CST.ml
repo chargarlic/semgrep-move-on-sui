@@ -84,6 +84,8 @@ type ability = [
       | `Key of Token.t (* "key" *)
     ]
   | `Ellips of Token.t (* "..." *)
+  | `Semg_meta_ellips of semgrep_metavar_ellipsis (*tok*)
+  | `Semg_meta_var of semgrep_metavar_var (*tok*)
 ]
 
 type reserved_identifier = [

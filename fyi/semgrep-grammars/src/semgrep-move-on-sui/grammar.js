@@ -238,9 +238,12 @@ module.exports = grammar(base_grammar, {
 
     // abilities
     // (e.g. struct XXX has ..., YYY)
+    // (e.g. struct XXX has $...ABILITIES)
     ability: ($, previous) => choice(
       previous,
       $.ellipsis,
+      $._semgrep_metavar_ellipsis,
+      $._semgrep_metavar_var,
     ),
 
     // type parameter

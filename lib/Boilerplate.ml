@@ -177,6 +177,12 @@ let map_ability (env : env) (x : CST.ability) =
   | `Ellips tok -> R.Case ("Ellips",
       (* "..." *) token env tok
     )
+  | `Semg_meta_ellips tok -> R.Case ("Semg_meta_ellips",
+      (* pattern \$\.\.\.[A-Z_][A-Z_0-9]* *) token env tok
+    )
+  | `Semg_meta_var tok -> R.Case ("Semg_meta_var",
+      (* pattern \$[A-Z_][A-Z_0-9]* *) token env tok
+    )
   )
 
 let map_reserved_identifier (env : env) (x : CST.reserved_identifier) =
