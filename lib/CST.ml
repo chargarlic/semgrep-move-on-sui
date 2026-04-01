@@ -31,6 +31,8 @@ type address_literal = Token.t (* pattern @0x[a-fA-F0-9]+ *)
 
 type byte_string_literal = Token.t (* pattern "b\"(\\\\.|[^\\\\\"])*\"" *)
 
+type string_literal = Token.t (* pattern "\"(\\\\.|[^\\\\\"])*\"" *)
+
 type primitive_type = [
     `U8 of Token.t (* "u8" *)
   | `U16 of Token.t (* "u16" *)
@@ -162,6 +164,7 @@ type literal_value = [
   | `Num_lit of num_literal
   | `Hex_str_lit of hex_string_literal (*tok*)
   | `Byte_str_lit of byte_string_literal (*tok*)
+  | `Str_lit of string_literal (*tok*)
 ]
 
 type type_parameter = [

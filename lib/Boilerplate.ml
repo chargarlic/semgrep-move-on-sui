@@ -382,6 +382,9 @@ let map_literal_value (env : env) (x : CST.literal_value) =
   | `Byte_str_lit tok -> R.Case ("Byte_str_lit",
       (* pattern "b\"(\\\\.|[^\\\\\"])*\"" *) token env tok
     )
+  | `Str_lit tok -> R.Case ("Str_lit",
+      (* pattern "\"(\\\\.|[^\\\\\"])*\"" *) token env tok
+    )
   )
 
 let map_type_parameter (env : env) (x : CST.type_parameter) =

@@ -70,6 +70,7 @@ let children_regexps : (string * Run.exp option) list = [
   "exists", None;
   "hex_string_literal", None;
   "byte_string_literal", None;
+  "string_literal", None;
   "line_comment", None;
   "semgrep_metavar_var", None;
   "forall", None;
@@ -278,6 +279,7 @@ let children_regexps : (string * Run.exp option) list = [
       Token (Name "num_literal");
       Token (Name "hex_string_literal");
       Token (Name "byte_string_literal");
+      Token (Name "string_literal");
     |];
   );
   "type_parameter",
@@ -2303,6 +2305,11 @@ let trans_byte_string_literal ((kind, body) : mt) : CST.byte_string_literal =
   | Leaf v -> v
   | Children _ -> assert false
 
+let trans_string_literal ((kind, body) : mt) : CST.string_literal =
+  match body with
+  | Leaf v -> v
+  | Children _ -> assert false
+
 let trans_line_comment ((kind, body) : mt) : CST.line_comment =
   match body with
   | Leaf v -> v
@@ -2824,6 +2831,10 @@ let trans_literal_value ((kind, body) : mt) : CST.literal_value =
       | Alt (4, v) ->
           `Byte_str_lit (
             trans_byte_string_literal (Run.matcher_token v)
+          )
+      | Alt (5, v) ->
+          `Str_lit (
+            trans_string_literal (Run.matcher_token v)
           )
       | _ -> assert false
       )
