@@ -2784,8 +2784,14 @@ let map_module_definition (env : env) ((v1, v2, v3) : CST.module_definition) =
 
 let map_source_file (env : env) (x : CST.source_file) =
   (match x with
-  | `Rep_module_defi xs -> R.Case ("Rep_module_defi",
-      R.List (List.map (map_module_definition env) xs)
+  | `Rep_choice_module_ext_defi xs -> R.Case ("Rep_choice_module_ext_defi",
+      R.List (List.map (fun x ->
+        match x with
+        | `Module_ext_defi (v0, v1) -> R.Case ("Module_ext_defi",
+            R.Tuple [token env v0; map_module_definition env v1])
+        | `Module_defi x -> R.Case ("Module_defi",
+            map_module_definition env x)
+      ) xs)
     )
   | `Semg_exp x -> R.Case ("Semg_exp",
       map_semgrep_expression env x

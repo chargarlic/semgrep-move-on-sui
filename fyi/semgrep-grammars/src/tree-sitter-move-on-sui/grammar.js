@@ -46,7 +46,9 @@ module.exports = grammar({
   ],
 
   rules: {
-    source_file: $ => repeat($.module_definition),
+    source_file: $ => repeat(choice($.module_extension_definition, $.module_definition)),
+
+    module_extension_definition: $ => seq('extend', field('module', $.module_definition)),
 
     // parse use declarations
     use_declaration: $ => seq(

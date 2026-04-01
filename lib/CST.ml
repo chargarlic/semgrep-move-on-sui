@@ -1111,8 +1111,15 @@ type module_definition = (
     Token.t (* "module" *) * module_identity * module_body
 )
 
+type module_extension_definition = (
+    Token.t (* "extend" *) * module_definition
+)
+
 type source_file = [
-    `Rep_module_defi of module_definition list (* zero or more *)
+    `Rep_choice_module_ext_defi of [
+        `Module_ext_defi of module_extension_definition
+      | `Module_defi of module_definition
+    ] list (* zero or more *)
   | `Semg_exp of semgrep_expression
   | `Semg_stmt of semgrep_statement
   | `Semg_part of [

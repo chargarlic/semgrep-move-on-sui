@@ -2142,6 +2142,13 @@ let children_regexps : (string * Run.exp option) list = [
       Token (Name "ellipsis");
     |];
   );
+  "module_extension_definition",
+  Some (
+    Seq [
+      Token (Literal "extend");
+      Token (Name "module_definition");
+    ];
+  );
   "module_definition",
   Some (
     Seq [
@@ -2170,7 +2177,10 @@ let children_regexps : (string * Run.exp option) list = [
   Some (
     Alt [|
       Repeat (
-        Token (Name "module_definition");
+        Alt [|
+          Token (Name "module_extension_definition");
+          Token (Name "module_definition");
+        |];
       );
       Token (Name "semgrep_expression");
       Token (Name "semgrep_statement");
@@ -6759,7 +6769,7 @@ let trans_module_body ((kind, body) : mt) : CST.module_body =
       )
   | Leaf _ -> assert false
 
-let trans_module_definition ((kind, body) : mt) : CST.module_definition =
+let rec trans_module_definition ((kind, body) : mt) : CST.module_definition =
   match body with
   | Children v ->
       (match v with
@@ -6768,6 +6778,19 @@ let trans_module_definition ((kind, body) : mt) : CST.module_definition =
             Run.trans_token (Run.matcher_token v0),
             trans_module_identity (Run.matcher_token v1),
             trans_module_body (Run.matcher_token v2)
+          )
+      | _ -> assert false
+      )
+  | Leaf _ -> assert false
+
+and trans_module_extension_definition ((kind, body) : mt) : CST.module_extension_definition =
+  match body with
+  | Children v ->
+      (match v with
+      | Seq [v0; v1] ->
+          (
+            Run.trans_token (Run.matcher_token v0),
+            trans_module_definition (Run.matcher_token v1)
           )
       | _ -> assert false
       )
@@ -6826,9 +6849,16 @@ let trans_source_file ((kind, body) : mt) : CST.source_file =
   | Children v ->
       (match v with
       | Alt (0, v) ->
-          `Rep_module_defi (
+          `Rep_choice_module_ext_defi (
             Run.repeat
-              (fun v -> trans_module_definition (Run.matcher_token v))
+              (fun v ->
+                match v with
+                | Matcher.Capture.Alt (0, v) ->
+                    `Module_ext_defi (trans_module_extension_definition (Run.matcher_token v))
+                | Matcher.Capture.Alt (1, v) ->
+                    `Module_defi (trans_module_definition (Run.matcher_token v))
+                | _ -> assert false
+              )
               v
           )
       | Alt (1, v) ->
