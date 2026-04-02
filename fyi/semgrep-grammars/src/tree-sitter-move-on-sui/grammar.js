@@ -83,7 +83,7 @@ module.exports = grammar({
 
     // parse top-level decl modifiers
     friend_declaration: $ => seq('friend', field('module', $.friend_access), ';'),
-    modifier: $ => choice('public', 'public(package)', 'public(friend)', 'entry', 'native'),
+    modifier: $ => choice('public', 'public(package)', 'public(friend)', token(seq('public', /\s+/, '(', /\s*/, 'package', /\s*/, ')')), token(seq('public', /\s+/, '(', /\s*/, 'friend', /\s*/, ')')), 'entry', 'native'),
     ability: $ => choice(
       'copy',
       'drop',

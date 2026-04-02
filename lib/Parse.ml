@@ -82,10 +82,14 @@ let children_regexps : (string * Run.exp option) list = [
       Token (Literal "public");
       Token (Literal "public(package)");
       Token (Literal "public(friend)");
+      Token (Name "tok_public_pat_3d340f6_lpar_pat_a84aa85_pack_pat_a84aa85_rpar");
+      Token (Name "tok_public_pat_3d340f6_lpar_pat_a84aa85_friend_pat_a84aa85_rpar");
       Token (Literal "entry");
       Token (Literal "native");
     |];
   );
+  "tok_public_pat_3d340f6_lpar_pat_a84aa85_pack_pat_a84aa85_rpar", None;
+  "tok_public_pat_3d340f6_lpar_pat_a84aa85_friend_pat_a84aa85_rpar", None;
   "macro_identifier_dollar", None;
   "identifier", None;
   "unary_op",
@@ -2361,10 +2365,18 @@ let trans_modifier ((kind, body) : mt) : CST.modifier =
             Run.trans_token (Run.matcher_token v)
           )
       | Alt (3, v) ->
-          `Entry (
+          `Publ_83d19bc (
             Run.trans_token (Run.matcher_token v)
           )
       | Alt (4, v) ->
+          `Publ_7c2e49a (
+            Run.trans_token (Run.matcher_token v)
+          )
+      | Alt (5, v) ->
+          `Entry (
+            Run.trans_token (Run.matcher_token v)
+          )
+      | Alt (6, v) ->
           `Native (
             Run.trans_token (Run.matcher_token v)
           )
