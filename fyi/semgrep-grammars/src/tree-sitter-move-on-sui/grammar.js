@@ -262,8 +262,7 @@ module.exports = grammar({
       field('body', $.block)
     ),
     _function_signature: $ => seq(
-      optional($.modifier),
-      optional($.modifier),
+      repeat($.modifier),
       'fun',
       field('name', $._function_identifier),
       optional(field('type_parameters', $.type_parameters)),
@@ -658,7 +657,7 @@ module.exports = grammar({
     )),
 
     // abort expression
-    abort_expression: $ => seq('abort', field('abort', $._expression)),
+    abort_expression: $ => prec.left(seq('abort', optional(field('abort', $._expression)))),
 
     match_expression: $ => seq(
       "match",

@@ -914,10 +914,7 @@ let children_regexps : (string * Run.exp option) list = [
   "function_signature",
   Some (
     Seq [
-      Opt (
-        Token (Name "modifier");
-      );
-      Opt (
+      Repeat (
         Token (Name "modifier");
       );
       Token (Literal "fun");
@@ -1017,7 +1014,9 @@ let children_regexps : (string * Run.exp option) list = [
   Some (
     Seq [
       Token (Literal "abort");
-      Token (Name "expression");
+      Opt (
+        Token (Name "expression");
+      );
     ];
   );
   "access_field",
@@ -4122,26 +4121,22 @@ let trans_function_signature ((kind, body) : mt) : CST.function_signature =
   match body with
   | Children v ->
       (match v with
-      | Seq [v0; v1; v2; v3; v4; v5; v6] ->
+      | Seq [v0; v1; v2; v3; v4; v5] ->
           (
-            Run.opt
+            Run.repeat
               (fun v -> trans_modifier (Run.matcher_token v))
               v0
             ,
-            Run.opt
-              (fun v -> trans_modifier (Run.matcher_token v))
-              v1
-            ,
-            Run.trans_token (Run.matcher_token v2),
-            trans_function_identifier (Run.matcher_token v3),
+            Run.trans_token (Run.matcher_token v1),
+            trans_function_identifier (Run.matcher_token v2),
             Run.opt
               (fun v -> trans_type_parameters (Run.matcher_token v))
-              v4
+              v3
             ,
-            trans_function_parameters (Run.matcher_token v5),
+            trans_function_parameters (Run.matcher_token v4),
             Run.opt
               (fun v -> trans_ret_type (Run.matcher_token v))
-              v6
+              v5
           )
       | _ -> assert false
       )
@@ -4313,7 +4308,9 @@ let rec trans_abort_expression ((kind, body) : mt) : CST.abort_expression =
       | Seq [v0; v1] ->
           (
             Run.trans_token (Run.matcher_token v0),
-            trans_expression (Run.matcher_token v1)
+            Run.opt
+              (fun v -> trans_expression (Run.matcher_token v))
+              v1
           )
       | _ -> assert false
       )

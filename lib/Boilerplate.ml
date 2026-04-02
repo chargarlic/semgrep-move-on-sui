@@ -1168,41 +1168,28 @@ let map_spec_function_signature (env : env) ((v1, v2, v3, v4) : CST.spec_functio
   let v4 = map_ret_type env v4 in
   R.Tuple [v1; v2; v3; v4]
 
-let map_function_signature (env : env) ((v1, v2, v3, v4, v5, v6, v7) : CST.function_signature) =
-  let v1 =
-    (match v1 with
-    | Some x -> R.Option (Some (
-        map_modifier env x
-      ))
-    | None -> R.Option None)
+let map_function_signature (env : env) ((v1, v2, v3, v4, v5, v6) : CST.function_signature) =
+  let v1 = R.List (List.map (map_modifier env) v1) in
+  let v2 = (* "fun" *) token env v2 in
+  let v3 =
+    (* pattern (`)?[a-zA-Z_][0-9a-zA-Z_]*(`)?|\$\.\.\.[A-Z_][A-Z_0-9]*]|\$[A-Z_][A-Z_0-9]* *) token env v3
   in
-  let v2 =
-    (match v2 with
-    | Some x -> R.Option (Some (
-        map_modifier env x
-      ))
-    | None -> R.Option None)
-  in
-  let v3 = (* "fun" *) token env v3 in
   let v4 =
-    (* pattern (`)?[a-zA-Z_][0-9a-zA-Z_]*(`)?|\$\.\.\.[A-Z_][A-Z_0-9]*]|\$[A-Z_][A-Z_0-9]* *) token env v4
-  in
-  let v5 =
-    (match v5 with
+    (match v4 with
     | Some x -> R.Option (Some (
         map_type_parameters env x
       ))
     | None -> R.Option None)
   in
-  let v6 = map_function_parameters env v6 in
-  let v7 =
-    (match v7 with
+  let v5 = map_function_parameters env v5 in
+  let v6 =
+    (match v6 with
     | Some x -> R.Option (Some (
         map_ret_type env x
       ))
     | None -> R.Option None)
   in
-  R.Tuple [v1; v2; v3; v4; v5; v6; v7]
+  R.Tuple [v1; v2; v3; v4; v5; v6]
 
 let map_macro_signature (env : env) ((v1, v2, v3, v4, v5, v6) : CST.macro_signature) =
   let v1 =
@@ -1310,7 +1297,10 @@ let map_struct_item (env : env) (x : CST.struct_item) =
 
 let rec map_abort_expression (env : env) ((v1, v2) : CST.abort_expression) =
   let v1 = (* "abort" *) token env v1 in
-  let v2 = map_expression env v2 in
+  let v2 = match v2 with
+    | Some x -> R.Option (Some (map_expression env x))
+    | None -> R.Option None
+  in
   R.Tuple [v1; v2]
 
 and map_access_field (env : env) ((v1, v2, v3) : CST.access_field) =

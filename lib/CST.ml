@@ -469,8 +469,7 @@ type spec_function_signature = (
 )
 
 type function_signature = (
-    modifier option
-  * modifier option
+    modifier list (* zero or more *)
   * Token.t (* "fun" *)
   * identifier (*tok*)
   * type_parameters option
@@ -514,7 +513,7 @@ type struct_item = [
     )
 ]
 
-type abort_expression = (Token.t (* "abort" *) * expression)
+type abort_expression = (Token.t (* "abort" *) * expression option)
 
 and access_field = (
     dot_or_index_chain
