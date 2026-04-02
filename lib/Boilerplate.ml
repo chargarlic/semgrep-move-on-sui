@@ -2035,8 +2035,11 @@ and map_macro_call_expression (env : env) ((v1, v2, v3) : CST.macro_call_express
 
 and map_match_arm (env : env) (x : CST.match_arm) =
   (match x with
-  | `Bind_list_opt_if_exp_EQGT_exp (v1, v2, v3, v4) -> R.Case ("Bind_list_opt_if_exp_EQGT_exp",
-      let v1 = map_bind_list env v1 in
+  | `Choice_bind_list_opt_if_exp_EQGT_exp (v1, v2, v3, v4) -> R.Case ("Choice_bind_list_opt_if_exp_EQGT_exp",
+      let v1 = (match v1 with
+        | `Bind_list x -> R.Case ("Bind_list", map_bind_list env x)
+        | `Lit_value x -> R.Case ("Lit_value", map_literal_value env x))
+      in
       let v2 =
         (match v2 with
         | Some (v1, v2) -> R.Option (Some (

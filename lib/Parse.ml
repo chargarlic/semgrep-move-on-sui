@@ -1617,7 +1617,10 @@ let children_regexps : (string * Run.exp option) list = [
   Some (
     Alt [|
       Seq [
-        Token (Name "bind_list");
+        Alt [|
+          Token (Name "bind_list");
+          Token (Name "literal_value");
+        |];
         Opt (
           Seq [
             Token (Literal "if");
@@ -5649,11 +5652,17 @@ and trans_match_arm ((kind, body) : mt) : CST.match_arm =
   | Children v ->
       (match v with
       | Alt (0, v) ->
-          `Bind_list_opt_if_exp_EQGT_exp (
+          `Choice_bind_list_opt_if_exp_EQGT_exp (
             (match v with
             | Seq [v0; v1; v2; v3] ->
                 (
-                  trans_bind_list (Run.matcher_token v0),
+                  (match v0 with
+                   | Matcher.Capture.Alt (0, v) ->
+                       `Bind_list (trans_bind_list (Run.matcher_token v))
+                   | Matcher.Capture.Alt (1, v) ->
+                       `Lit_value (trans_literal_value (Run.matcher_token v))
+                   | _ -> assert false
+                  ),
                   Run.opt
                     (fun v ->
                       (match v with

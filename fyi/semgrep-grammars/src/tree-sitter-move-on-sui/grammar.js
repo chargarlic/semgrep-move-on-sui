@@ -674,7 +674,7 @@ module.exports = grammar({
     ),
 
     match_arm: $ => seq(
-      $.bind_list,
+      choice($.bind_list, $._literal_value),
       optional(seq(
         'if',
         field('arm_guard', $._expression)

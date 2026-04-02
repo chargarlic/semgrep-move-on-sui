@@ -811,8 +811,8 @@ and macro_call_expression = (
 )
 
 and match_arm = [
-    `Bind_list_opt_if_exp_EQGT_exp of (
-        bind_list
+    `Choice_bind_list_opt_if_exp_EQGT_exp of (
+        [ `Bind_list of bind_list | `Lit_value of literal_value ]
       * (Token.t (* "if" *) * expression) option
       * Token.t (* "=>" *)
       * expression
