@@ -619,7 +619,7 @@ module.exports = grammar({
     ),
     lambda_bindings: $ => seq(
       '|',
-      sepBy(',', $._bind),
+      sepBy(',', choice($.function_parameter, $._bind)),
       '|'
     ),
     // if-else expression
